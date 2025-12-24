@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: solana-backend
+    runtime: node
+    plan: free
+    
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: solana-redis
+          property: connectionString
+
+      - key: SOLANA_PRIVATE_KEY
+        sync: false
+      
+      - key: SOLANA_RPC_URL
+        sync: false
+
+      - key: DATABASE_URL
+        sync: false
+
+      - key: NODE_ENV
+        value: production
+
+keyvalues:
+  - name: solana-redis
+    plan: free
+    region: singapore
