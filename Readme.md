@@ -1,177 +1,262 @@
-🚀 Solana Execution Engine
-==========================
+# 🚀 Solana Execution Engine
 
-> **NOTE:** This project uses **fully simulated routing and execution**.You can test the entire trading lifecycle without spending real SOL.
+> **NOTE:** This project uses **fully simulated routing and execution**.
+> You can test the complete Solana trading lifecycle without spending real SOL.
 
-The **Solana Execution Engine** is the “brain” of a trading system.It receives a raw trade request (for example, _Swap 1 SOL for USDC_) and manages the complete lifecycle until the trade reaches a final state.
+The **Solana Execution Engine** is the “brain” of a trading system.
+It takes a raw trade request (e.g., *Swap 1 SOL for USDC*) and manages the full lifecycle — routing, execution, queuing, and real-time streaming — until the trade reaches a terminal state.
 
-This system demonstrates how **real Solana trading engines work internally** — order intake, routing, execution, queuing, and live WebSocket updates — without actually touching the blockchain.
+This project demonstrates how **real Solana trading engines** are built internally:
+high-performance queues, execution workers, Redis streaming, and WebSockets.
 
-🔁 What is Simulated?
----------------------
+---
 
-Two critical parts are simulated:
+# 🔁 What Is Simulated?
+
+Two critical layers are simulated so you can safely test everything.
 
 ### 🧭 Simulated Routing
 
 Here, the engine:
 
-*   Uses mock price curves
-    
-*   Calculates best paths
-    
-*   Chooses the optimal simulated route
-    
+* Uses mock Logic to comapre between radiyum and meteora.
+* Computes best price paths
+* Chooses the most efficient route
 
 ### ⚡ Simulated Execution
 
 This mimics:
 
-*   Transaction signing
-    
-*   Network latency
-    
-*   Solana confirmations
-    
+* Transaction signing
+* Network latency
+* Solana confirmations
 
-States go through:
+Execution progresses through:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   PENDING → PROCESSING → SUCCESS   `
+```
+PENDING → PROCESSING → SUCCESS
+```
 
-All of this is streamed live to the client via WebSockets.
+All updates are streamed live via WebSockets.
 
-🏗 System Architecture
-======================
+---
 
-The engine uses a **high-performance producer-consumer design**:
+# 🏗 System Architecture
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Client    ↓  Fastify API (Producer)    ↓  BullMQ + Redis (Queue)    ↓  Execution Worker (Consumer)    ↓  Redis Pub/Sub    ↓  WebSocket → Client  🔩 Components  Component                   Role  **Fastify API**           Accepts incoming trade orders  **BullMQ + Redis**        Buffers requests and prevents Solana rate-limit overload  **Worker**                Runs simulated routing and execution lifecycle  **Redis   Pub/Sub**       Broadcasts live state changes from worker  **WebSocket**             Streams real-time updates to UI / Postman   `
+This project uses a **high-performance Producer–Consumer model**:
 
-🌍 Live Deployment
-==================
+```
+Client
+  ↓
+Fastify API (Producer)
+  ↓
+BullMQ Queue (Redis)
+  ↓
+Execution Worker (Consumer)
+  ↓
+Redis Pub/Sub
+  ↓
+WebSocket → Client
+```
+
+---
+
+## 🔩 Components
+
+| Component          | Role                                                     |
+| ------------------ | -------------------------------------------------------- |
+| **Fastify API**    | Accepts incoming trade orders                            |
+| **BullMQ + Redis** | Buffers requests and prevents Solana rate-limit overload |
+| **Worker**         | Runs simulated routing and execution                     |
+| **Redis Pub/Sub**  | Broadcasts live execution state                          |
+| **WebSocket**      | Streams real-time updates to UI / Postman                |
+
+---
+
+# 🌍 Live Deployment (Render)
 
 This project is deployed on **Render**:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   https://solana-backend-2k67.onrender.com   `
+```
+https://solana-backend-2k67.onrender.com
+```
 
-⚠️ **Important:**Render spins down inactive services.First request may take **30–60 seconds** to wake up.
+⚠️ Render puts services to sleep when idle.
+First request may take **30–60 seconds** to wake up.
 
-🚦 Getting Started (Local)
-==========================
+---
 
-1️⃣ Install
------------
+# 🚀 Render Blueprint & Infrastructure
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   git clone   cd sol-execution-engine  npm install  # Setup database  npx prisma migrate dev  npx prisma generate   `
+Deployment is handled using a **Render Blueprint** powered by `render.yaml`.
 
-2️⃣ Start Redis & Postgres
---------------------------
+### `render.yaml` automatically provisions:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   docker run --name engine-redis -p 6379:6379 -d redis  docker run --name engine-db -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres   `
+Webservice and Redis Instance
+          
+With one click, Render creates the full distributed system.
 
-3️⃣ Environment Variables
--------------------------
+---
 
-Create .env:
+# 🚦 Local Setup
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   PORT=3000  DATABASE_URL="postgresql://postgres:password@localhost:5432/solana_engine"  REDIS_URL="redis://localhost:6379"  SOLANA_RPC_URL="https://api.devnet-beta.solana.com"  SOLANA_PRIVATE_KEY="YOUR_PHANTOM_PRIVATE_KEY"   `
+## 1️⃣ Install
 
-🧪 Testing With Postman (Fully Automated)
-=========================================
+clone this repo
 
-This project is designed to be tested using **Postman Environments + WebSockets**.
+```bash
+cd sol-execution-engine
+npm install
 
-1️⃣ Import Postman Files
-------------------------
+npx prisma migrate dev
+npx prisma generate
+```
 
-Go to:
+---
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   /tests/postman/   `
+## 2️⃣ Start Redis & Postgres
 
-Import both:
+```bash
+docker run --name engine-redis -p 6379:6379 -d redis
+docker run --name engine-db -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres
+```
 
-*   Collection
-    
-*   Environment
-    
+---
 
-Enable the environment named:
+## 3️⃣ Environment Variables
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Solana Project Environment   `
+Create `.env`:
 
-2️⃣ Set Base URL
-----------------
+```env
+PORT=3000
+
+DATABASE_URL="postgresql://postgres:password@localhost:5432/solana_engine"
+REDIS_URL="redis://localhost:6379"
+
+SOLANA_RPC_URL="https://api.devnet-beta.solana.com"
+SOLANA_PRIVATE_KEY="YOUR_PHANTOM_PRIVATE_KEY"
+```
+
+---
+
+# 🧪 Testing With Postman (Fully Automated)
+
+This project supports **zero-manual-copy testing** using Postman Environments + WebSockets.
+
+---
+
+## 1️⃣ Import Postman Files
+
+Import everything inside:
+
+```
+/tests/postman/
+```
+
+Enable the environment:
+
+```
+Solana Project Environment
+```
+
+---
+
+## 2️⃣ Set Base URL
 
 In the Postman Environment:
 
-For **local**:
+For local:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   baseurl = http://localhost:3000   `
+```
+baseurl = http://localhost:3000
+```
 
-For **Render (Live)**:
+For Render:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   baseurl = https://solana-backend-2k67.onrender.com   `
+```
+baseurl = https://solana-backend-2k67.onrender.com
+```
 
-🔁 Order → WebSocket Live Flow
-==============================
+---
 
-Step 1 — Create Order
----------------------
+# 🔁 Order → Live WebSocket Flow
+
+## Step 1 — Create Order
 
 Run:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   POST /api/order   `
+```
+POST /api/order
+```
 
-This request includes a **Post-Response Script** that automatically saves:
+This request has a **Post-Response Script** that automatically saves:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   {{orderId}}   `
+```
+{{orderId}}
+```
 
-into the Postman environment.
+to the Postman environment.
 
-You do NOT need to copy anything manually.
+No manual copy needed.
 
-Step 2 — Connect WebSocket
---------------------------
+---
+
+## Step 2 — Connect WebSocket
 
 Open a new **WebSocket Request** in Postman:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   ws://{{baseurl}}/api/order/watch/{{orderId}}   `
+```
+ws://{{baseurl}}/api/order/watch/{{orderId}}
+```
 
 Example (Render):
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   ws://solana-backend-2k67.onrender.com/api/order/watch/abc123   `
+```
+ws://solana-backend-2k67.onrender.com/api/order/watch/abc123
+```
 
 Click **Connect**.
 
-Step 3 — Watch Live Execution
------------------------------
+---
 
-You will see messages like:
+## Step 3 — Watch Execution
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   ROUTING → PENDING  ROUTING → SUCCESS  EXECUTION → PENDING  EXECUTION → PROCESSING  EXECUTION → SUCCESS   `
+You will receive real-time updates:
 
-After the final state:
+```
+ROUTING → PENDING
+ROUTING → SUCCESS
+EXECUTION → PENDING
+EXECUTION → PROCESSING
+EXECUTION → SUCCESS
+```
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   EXECUTION → SUCCESS   `
+After `EXECUTION → SUCCESS`,
+the socket closes automatically after **5 seconds**.
 
-The socket will automatically close after **5 seconds**.
+---
 
-🧰 Dev Scripts
-==============
+# 🧰 Dev Scripts
 
-Command Purpose
+| Command                  | Purpose                |
+| ------------------------ | ---------------------- |
+| `npm run build`          | Compile TypeScript     |
+| `npm start`              | Start API + Worker     |
+| `npx prisma migrate dev` | Update DB              |
+| `npx prisma generate`    | Generate Prisma client |
 
-npm run build Compile TypeScript
+---
 
-npm start Start API + Worker
+# 🧠 What This Project Demonstrates
 
-npx prisma migrate dev Update DB
+This system shows how **real Solana trading platforms** are built:
 
-npx prisma generate Generate client
+* DEX routing engines
+* Queue-based execution
+* Worker-driven processing
+* Redis streaming
+* WebSocket trade tracking
 
-🚀 Production Deployment (Render)
----------------------------------
+---
 
-This project is deployed on **Render** using a **Blueprint** created from render.yaml.
 
-The render.yaml file automatically creates: Web service and Redis Instance on render.
